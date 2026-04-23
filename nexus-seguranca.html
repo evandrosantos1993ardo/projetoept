@@ -1,0 +1,1947 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXUS — AI Social Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #111118;
+  --surface2: #18181f;
+  --surface3: #1e1e28;
+  --border: rgba(255,255,255,0.07);
+  --accent: #6366f1;
+  --accent2: #818cf8;
+  --accent-glow: rgba(99,102,241,0.25);
+  --text: #f4f4f8;
+  --text2: #9899b0;
+  --text3: #5a5b72;
+  --green: #22d3a5;
+  --red: #f43f5e;
+  --amber: #f59e0b;
+  --font: 'Sora', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg);
+  font-family: var(--font);
+  color: var(--text);
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 20% 10%, rgba(99,102,241,0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 80% 80%, rgba(129,140,248,0.08) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* PHONE SHELL */
+.phone {
+  width: 375px;
+  height: 812px;
+  background: var(--surface);
+  border-radius: 48px;
+  border: 1px solid rgba(255,255,255,0.1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.04), 0 40px 80px rgba(0,0,0,0.6), 0 0 60px var(--accent-glow);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+.phone::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%; transform: translateX(-50%);
+  width: 126px; height: 34px;
+  background: #000; border-radius: 0 0 22px 22px; z-index: 100;
+}
+
+/* STATUS BAR */
+.status-bar {
+  height: 44px; padding: 14px 24px 0;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0; font-size: 12px; font-weight: 600;
+  color: var(--text); font-family: var(--mono); z-index: 10;
+  background: var(--surface);
+}
+.status-right { display: flex; align-items: center; gap: 6px; }
+
+/* SCREENS */
+.screen {
+  display: none;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+  animation: fadeIn 0.25s ease;
+}
+.screen.active { display: flex; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+/* BOTTOM NAV */
+.bottom-nav {
+  height: 64px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-around;
+  padding: 0 8px; flex-shrink: 0; z-index: 20;
+}
+.nav-item {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 8px 12px; border-radius: 12px; cursor: pointer; position: relative;
+  transition: all 0.15s;
+}
+.nav-item:active { transform: scale(0.9); }
+.nav-icon { font-size: 20px; color: var(--text3); }
+.nav-item.active .nav-icon { color: var(--accent); }
+.nav-dot { width: 4px; height: 4px; background: var(--accent); border-radius: 50%; position: absolute; bottom: 2px; }
+.nav-create .nav-icon {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, var(--accent), #818cf8);
+  border-radius: 14px; display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: white; box-shadow: 0 4px 16px var(--accent-glow);
+}
+.scrollable { overflow-y: auto; flex: 1; }
+.scrollable::-webkit-scrollbar { display: none; }
+
+/* ─── AUTH ─── */
+.auth-bg {
+  flex: 1; padding: 50px 28px 28px;
+  display: flex; flex-direction: column; overflow-y: auto;
+  background: linear-gradient(160deg, #0d0d14 0%, #111118 100%);
+}
+.auth-bg::-webkit-scrollbar { display: none; }
+.auth-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 32px; }
+.auth-logo-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 16px;
+}
+.auth-logo-name {
+  font-size: 20px; font-weight: 700; letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #fff, var(--accent2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.auth-headline { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; line-height: 1.2; margin-bottom: 8px; }
+.auth-sub { font-size: 13px; color: var(--text2); margin-bottom: 28px; line-height: 1.5; }
+.field-group { margin-bottom: 14px; }
+.field-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+.field {
+  background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 14px; padding: 13px 16px; font-size: 14px; color: var(--text);
+  display: flex; align-items: center; gap: 10px; transition: border-color 0.2s;
+}
+.field input {
+  background: transparent; border: none; outline: none;
+  font-size: 14px; color: var(--text); font-family: var(--font); width: 100%;
+}
+.field input::placeholder { color: var(--text3); }
+.field:focus-within { border-color: var(--accent); }
+.field-icon { font-size: 16px; }
+.btn-primary {
+  width: 100%; background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 14px; padding: 15px; text-align: center;
+  font-size: 15px; font-weight: 600; color: white;
+  box-shadow: 0 8px 24px var(--accent-glow); cursor: pointer;
+  border: none; font-family: var(--font); transition: transform 0.15s, box-shadow 0.15s;
+  margin-top: 16px;
+}
+.btn-primary:active { transform: scale(0.97); box-shadow: none; }
+.divider { display: flex; align-items: center; gap: 12px; margin: 16px 0; }
+.divider-line { flex: 1; height: 1px; background: var(--border); }
+.divider-text { font-size: 12px; color: var(--text3); }
+.social-btn {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 14px; padding: 13px; font-size: 14px; font-weight: 500;
+  color: var(--text); margin-bottom: 10px; cursor: pointer; transition: border-color 0.2s;
+}
+.social-btn:hover { border-color: var(--accent); }
+.auth-footer { text-align: center; margin-top: 14px; font-size: 13px; color: var(--text2); }
+.auth-link { color: var(--accent2); font-weight: 600; cursor: pointer; }
+.forgot-link { text-align: right; font-size: 12px; color: var(--accent2); margin-top: 8px; cursor: pointer; }
+.progress-bar { display: flex; gap: 6px; margin-bottom: 24px; }
+.progress-step { flex: 1; height: 3px; border-radius: 2px; background: var(--border); }
+.progress-step.done { background: var(--accent); }
+.progress-step.active { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+.error-msg { color: var(--red); font-size: 12px; margin-top: 6px; display: none; }
+.error-msg.show { display: block; }
+
+/* ─── SAFETY TECHNICIAN COMMENT ─── */
+.safety-comment {
+  background: linear-gradient(135deg, rgba(244,63,94,0.08), rgba(245,158,11,0.06));
+  border: 1.5px solid rgba(244,63,94,0.3);
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin: 8px 0 0;
+}
+.safety-comment-header {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+}
+.safety-avatar {
+  width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, #f43f5e, #f59e0b);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+.safety-name { font-size: 13px; font-weight: 700; color: var(--text); }
+.safety-badge-tag {
+  margin-left: auto;
+  background: rgba(244,63,94,0.2);
+  border: 1px solid rgba(244,63,94,0.4);
+  border-radius: 6px; padding: 2px 7px;
+  font-size: 9px; font-weight: 700; color: #f43f5e;
+  font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.08em;
+}
+.safety-risk-level {
+  display: inline-flex; align-items: center; gap: 5px;
+  border-radius: 8px; padding: 4px 10px; margin-bottom: 8px;
+  font-size: 11px; font-weight: 700; font-family: var(--mono);
+}
+.risk-high { background: rgba(244,63,94,0.15); color: #f43f5e; }
+.risk-medium { background: rgba(245,158,11,0.15); color: #f59e0b; }
+.risk-low { background: rgba(34,211,165,0.15); color: #22d3a5; }
+.safety-text { font-size: 12px; color: var(--text2); line-height: 1.6; }
+.safety-nr-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.safety-nr-tag {
+  background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.3);
+  border-radius: 6px; padding: 2px 8px; font-size: 10px; font-weight: 700;
+  color: var(--accent2); font-family: var(--mono);
+}
+.safety-typing {
+  display: flex; gap: 4px; align-items: center; padding: 4px 0;
+}
+.safety-typing span {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #f43f5e; animation: blink 1.2s infinite;
+}
+.safety-typing span:nth-child(2) { animation-delay: 0.2s; }
+.safety-typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes blink { 0%,80%,100%{opacity:0.2} 40%{opacity:1} }
+
+.post-image {
+  width: 100%; border-radius: 12px; margin: 8px 0;
+  max-height: 220px; object-fit: cover;
+  border: 1px solid var(--border);
+}
+
+/* ─── SAFETY SPECIALTY ─── */
+.section-divider {
+  display: flex; align-items: center; gap: 10px; margin: 18px 0 14px;
+}
+.section-divider-line { flex: 1; height: 1px; background: var(--border); }
+.section-divider-label {
+  font-size: 10px; font-weight: 700; color: var(--accent2); text-transform: uppercase;
+  letter-spacing: 0.12em; font-family: var(--mono);
+  display: flex; align-items: center; gap: 6px;
+}
+.nr-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px;
+}
+.nr-card {
+  background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 14px; padding: 10px 12px; cursor: pointer;
+  transition: all 0.2s; position: relative; overflow: hidden;
+}
+.nr-card:hover { border-color: rgba(99,102,241,0.4); }
+.nr-card.selected {
+  border-color: var(--accent);
+  background: rgba(99,102,241,0.1);
+}
+.nr-card.selected::after {
+  content: '✓';
+  position: absolute; top: 8px; right: 10px;
+  font-size: 11px; font-weight: 700; color: var(--accent);
+}
+.nr-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 6px; padding: 2px 7px;
+  font-size: 10px; font-weight: 700; color: white;
+  font-family: var(--mono); margin-bottom: 5px;
+}
+.nr-card.selected .nr-badge {
+  background: linear-gradient(135deg, var(--accent), var(--green));
+}
+.nr-title { font-size: 11px; font-weight: 600; color: var(--text); line-height: 1.3; }
+.nr-desc { font-size: 10px; color: var(--text3); margin-top: 2px; line-height: 1.3; }
+.exp-row { display: flex; gap: 6px; margin-bottom: 14px; }
+.exp-chip {
+  flex: 1; padding: 8px 6px; text-align: center;
+  background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 12px; font-size: 11px; font-weight: 600; color: var(--text2);
+  cursor: pointer; transition: all 0.2s;
+}
+.exp-chip:hover { border-color: rgba(99,102,241,0.4); }
+.exp-chip.selected {
+  border-color: var(--accent); color: var(--accent2);
+  background: rgba(99,102,241,0.1);
+}
+.field select {
+  background: transparent; border: none; outline: none;
+  font-size: 14px; color: var(--text); font-family: var(--font); width: 100%;
+  -webkit-appearance: none; cursor: pointer;
+}
+.field select option { background: #18181f; color: var(--text); }
+
+/* ─── FEED ─── */
+.feed-header {
+  padding: 12px 20px; display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.feed-logo {
+  font-size: 20px; font-weight: 700; letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #fff, var(--accent2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.feed-tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.feed-tab {
+  flex: 1; padding: 12px; text-align: center; font-size: 13px; font-weight: 500;
+  color: var(--text3); cursor: pointer; transition: color 0.15s; border-bottom: 2px solid transparent;
+}
+.feed-tab.active { color: var(--text); border-bottom-color: var(--accent); }
+.post-card { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; gap: 12px; }
+.avatar {
+  width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700;
+}
+.av1 { background: linear-gradient(135deg, #6366f1, #818cf8); }
+.av2 { background: linear-gradient(135deg, #22d3a5, #0ea5e9); }
+.av3 { background: linear-gradient(135deg, #f43f5e, #f59e0b); }
+.av4 { background: linear-gradient(135deg, #8b5cf6, #ec4899); }
+.post-body { flex: 1; min-width: 0; }
+.post-header { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.post-name { font-size: 14px; font-weight: 600; }
+.post-handle { font-size: 12px; color: var(--text3); }
+.post-time { font-size: 12px; color: var(--text3); margin-left: auto; }
+.post-text { font-size: 13px; color: var(--text2); line-height: 1.5; margin-bottom: 10px; }
+.post-text .ht { color: var(--accent2); }
+.post-actions { display: flex; gap: 20px; align-items: center; }
+.post-action { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text3); cursor: pointer; transition: color 0.15s; user-select: none; }
+.post-action:active { transform: scale(1.3); }
+.post-action.liked { color: var(--red); }
+.post-action.retweeted { color: var(--green); }
+.ai-badge {
+  display: inline-block; background: rgba(99,102,241,0.2); border: 1px solid rgba(99,102,241,0.3);
+  border-radius: 6px; padding: 2px 7px; font-size: 10px; font-weight: 600;
+  color: var(--accent2); font-family: var(--mono); margin-bottom: 6px;
+}
+
+/* ─── CREATE POST ─── */
+.modal-header {
+  padding: 14px 20px; display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.modal-cancel { font-size: 14px; color: var(--text2); cursor: pointer; }
+.modal-title { font-size: 15px; font-weight: 600; }
+.modal-btn {
+  background: var(--accent); border-radius: 20px; padding: 7px 18px;
+  font-size: 13px; font-weight: 600; color: white; cursor: pointer; border: none;
+  font-family: var(--font); transition: transform 0.15s;
+}
+.modal-btn:active { transform: scale(0.95); }
+.modal-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.create-textarea {
+  flex: 1; background: transparent; border: none; outline: none; resize: none;
+  font-family: var(--font); font-size: 15px; color: var(--text); line-height: 1.6;
+  padding: 16px 20px;
+}
+.create-textarea::placeholder { color: var(--text3); }
+.create-char { padding: 0 20px; font-size: 12px; color: var(--text3); font-family: var(--mono); }
+.create-char.warn { color: var(--amber); }
+.create-char.over { color: var(--red); }
+.ai-generate-card {
+  margin: 10px 20px; background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(129,140,248,0.06));
+  border: 1px solid rgba(99,102,241,0.25); border-radius: 16px; padding: 14px;
+}
+.ai-gen-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.ai-gen-icon {
+  width: 28px; height: 28px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px;
+}
+.ai-gen-title { font-size: 13px; font-weight: 600; color: var(--accent2); }
+.ai-suggestion { font-size: 12px; color: var(--text2); line-height: 1.5; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 10px; margin-bottom: 10px; }
+.ai-actions { display: flex; gap: 8px; }
+.ai-btn { flex: 1; padding: 8px; border-radius: 10px; font-size: 11px; font-weight: 600; text-align: center; cursor: pointer; border: none; font-family: var(--font); transition: transform 0.15s; }
+.ai-btn:active { transform: scale(0.95); }
+.ai-btn-use { background: var(--accent); color: white; }
+.ai-btn-regen { background: var(--surface3); color: var(--text2); }
+.create-toolbar {
+  padding: 12px 20px; border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: 16px; flex-shrink: 0;
+}
+.toolbar-icon { font-size: 20px; color: var(--accent2); cursor: pointer; }
+
+/* ─── PROFILE ─── */
+.profile-cover {
+  height: 110px;
+  background: linear-gradient(135deg, rgba(99,102,241,0.4), rgba(34,211,165,0.3));
+  position: relative; flex-shrink: 0;
+}
+.profile-cover-pattern {
+  position: absolute; inset: 0;
+  background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 10px);
+}
+.profile-header { padding: 0 20px 16px; border-bottom: 1px solid var(--border); position: relative; flex-shrink: 0; }
+.profile-avatar {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border: 3px solid var(--surface); margin-top: -36px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; font-weight: 700; box-shadow: 0 4px 20px var(--accent-glow);
+}
+.profile-edit-btn {
+  position: absolute; right: 20px; top: 8px;
+  border: 1px solid var(--border); border-radius: 20px; padding: 7px 16px;
+  font-size: 13px; font-weight: 600; color: var(--text); cursor: pointer;
+  background: var(--surface2); transition: border-color 0.2s;
+}
+.profile-edit-btn:hover { border-color: var(--accent); }
+.profile-name { font-size: 18px; font-weight: 700; margin-top: 10px; }
+.profile-handle { font-size: 13px; color: var(--text3); margin-bottom: 8px; }
+.profile-bio { font-size: 13px; color: var(--text2); line-height: 1.5; margin-bottom: 12px; }
+.profile-stats { display: flex; gap: 20px; }
+.stat-item { font-size: 13px; }
+.stat-num { font-weight: 700; color: var(--text); }
+.stat-label { color: var(--text3); }
+.profile-tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.profile-tab {
+  flex: 1; padding: 12px; text-align: center; font-size: 12px; font-weight: 500;
+  color: var(--text3); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s;
+}
+.profile-tab.active { color: var(--text); border-bottom-color: var(--accent); }
+
+/* ─── CHAT ─── */
+.chat-header { padding: 12px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.chat-user-name { font-size: 15px; font-weight: 600; }
+.chat-user-status { font-size: 11px; color: var(--green); }
+.chat-messages { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+.chat-messages::-webkit-scrollbar { display: none; }
+.msg-bubble { max-width: 75%; padding: 10px 14px; border-radius: 18px; font-size: 13px; line-height: 1.4; }
+.msg-in { background: var(--surface2); color: var(--text); align-self: flex-start; border-bottom-left-radius: 4px; }
+.msg-out { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+.msg-time { font-size: 10px; color: var(--text3); margin-top: 3px; }
+.msg-time-r { text-align: right; }
+.chat-input-row { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.chat-input {
+  flex: 1; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 20px; padding: 10px 16px; font-size: 13px; color: var(--text);
+  outline: none; font-family: var(--font); transition: border-color 0.2s;
+}
+.chat-input:focus { border-color: var(--accent); }
+.chat-send {
+  width: 36px; height: 36px; background: var(--accent); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 16px;
+  cursor: pointer; flex-shrink: 0; border: none; color: white; transition: transform 0.15s;
+}
+.chat-send:active { transform: scale(0.9); }
+.ai-reply-section { padding: 8px 16px; border-top: 1px solid var(--border); flex-shrink: 0; }
+.ai-reply-label { display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 600; color: var(--accent2); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; font-family: var(--mono); }
+.ai-chips-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
+.ai-chips-row::-webkit-scrollbar { display: none; }
+.ai-chip {
+  background: var(--surface2); border: 1px solid rgba(99,102,241,0.3);
+  border-radius: 20px; padding: 5px 12px; font-size: 12px; color: var(--text2);
+  cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: all 0.15s;
+}
+.ai-chip:hover { border-color: var(--accent); color: var(--accent2); }
+
+/* ─── NOTIFICATIONS ─── */
+.notif-header { padding: 16px 20px; font-size: 18px; font-weight: 700; border-bottom: 1px solid var(--border); flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; }
+.notif-section-label { padding: 10px 20px 6px; font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; background: var(--surface2); font-family: var(--mono); }
+.notif-item { padding: 14px 20px; display: flex; gap: 12px; border-bottom: 1px solid var(--border); align-items: flex-start; transition: background 0.2s; }
+.notif-item.unread { background: rgba(99,102,241,0.04); }
+.notif-icon-wrap { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.ni-like { background: rgba(244,63,94,0.15); }
+.ni-follow { background: rgba(99,102,241,0.15); }
+.ni-comment { background: rgba(34,211,165,0.15); }
+.ni-repost { background: rgba(245,158,11,0.15); }
+.ni-ai { background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(129,140,248,0.1)); }
+.notif-body { flex: 1; }
+.notif-text { font-size: 13px; color: var(--text); line-height: 1.4; }
+.notif-meta { font-size: 11px; color: var(--text3); margin-top: 3px; }
+.unread-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+
+/* ─── EXPLORE ─── */
+.search-bar {
+  margin: 14px 16px; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 14px; padding: 11px 16px; display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0; transition: border-color 0.2s;
+}
+.search-bar:focus-within { border-color: var(--accent); }
+.search-bar input { background: transparent; border: none; outline: none; font-family: var(--font); font-size: 14px; color: var(--text); width: 100%; }
+.search-bar input::placeholder { color: var(--text3); }
+.explore-chips { display: flex; padding: 0 16px; gap: 8px; margin-bottom: 14px; flex-shrink: 0; flex-wrap: wrap; }
+.echip { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+.echip.on { background: var(--accent); color: white; }
+.echip.off { background: var(--surface2); color: var(--text2); }
+.trend-section-title { padding: 10px 20px 6px; font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; font-family: var(--mono); }
+.trend-item { padding: 12px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; cursor: pointer; transition: background 0.15s; }
+.trend-item:hover { background: var(--surface2); }
+.trend-rank { font-size: 18px; font-weight: 800; color: var(--surface3); width: 28px; font-family: var(--mono); }
+.trend-info { flex: 1; }
+.trend-category { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; }
+.trend-name { font-size: 14px; font-weight: 600; }
+.trend-posts { font-size: 11px; color: var(--text3); }
+.trend-chart { width: 40px; height: 24px; display: flex; align-items: flex-end; gap: 2px; }
+.trend-bar { flex: 1; border-radius: 2px 2px 0 0; }
+.ai-rec-card { margin: 0 16px 14px; background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(129,140,248,0.06)); border: 1px solid rgba(99,102,241,0.2); border-radius: 16px; padding: 14px; }
+.ai-rec-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.ai-rec-list { display: flex; flex-direction: column; gap: 8px; }
+.ai-rec-item { display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.2); border-radius: 10px; padding: 8px; }
+.ai-rec-name { font-size: 12px; font-weight: 600; }
+.ai-rec-reason { font-size: 10px; color: var(--text3); }
+.follow-btn { background: white; color: #0a0a0f; border-radius: 20px; padding: 4px 12px; font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap; border: none; font-family: var(--font); transition: transform 0.15s; }
+.follow-btn:active { transform: scale(0.95); }
+.follow-btn.following { background: transparent; color: var(--text2); border: 1px solid var(--border); }
+
+/* ─── SETTINGS ─── */
+.settings-header { padding: 16px 20px; display: flex; align-items: center; gap: 14px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.settings-title { font-size: 18px; font-weight: 700; }
+.settings-profile-card { margin: 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: 16px; padding: 14px; display: flex; align-items: center; gap: 12px; }
+.settings-avatar { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; }
+.settings-user-name { font-size: 15px; font-weight: 600; }
+.settings-user-handle { font-size: 12px; color: var(--text3); }
+.settings-plan { margin-left: auto; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 20px; padding: 4px 10px; font-size: 11px; font-weight: 700; color: white; }
+.settings-section { margin: 0 16px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+.settings-section-title { padding: 10px 16px 6px; font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; font-family: var(--mono); }
+.settings-row { display: flex; align-items: center; gap: 12px; padding: 13px 16px; border-top: 1px solid var(--border); cursor: pointer; transition: background 0.15s; }
+.settings-row:hover { background: rgba(255,255,255,0.02); }
+.srow-icon { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+.si-p { background: rgba(99,102,241,0.15); }
+.si-b { background: rgba(14,165,233,0.15); }
+.si-g { background: rgba(34,211,165,0.15); }
+.si-r { background: rgba(244,63,94,0.15); }
+.si-a { background: rgba(245,158,11,0.15); }
+.srow-info { flex: 1; }
+.srow-label { font-size: 13px; font-weight: 500; }
+.srow-desc { font-size: 11px; color: var(--text3); }
+.srow-badge { background: var(--red); border-radius: 10px; padding: 2px 7px; font-size: 11px; font-weight: 700; color: white; }
+.switch { width: 42px; height: 24px; background: var(--accent); border-radius: 12px; position: relative; flex-shrink: 0; cursor: pointer; transition: background 0.2s; }
+.switch-thumb { position: absolute; right: 3px; top: 3px; width: 18px; height: 18px; background: white; border-radius: 50%; transition: all 0.2s; }
+.switch.off { background: var(--surface3); }
+.switch.off .switch-thumb { right: auto; left: 3px; }
+.theme-options { display: flex; gap: 8px; margin-top: 8px; }
+.theme-option { flex: 1; padding: 10px 6px; border-radius: 12px; border: 1px solid var(--border); text-align: center; font-size: 11px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; transition: all 0.15s; color: var(--text3); }
+.theme-option.sel { border-color: var(--accent); background: rgba(99,102,241,0.1); color: var(--accent2); }
+.tswatch { width: 28px; height: 28px; border-radius: 8px; }
+
+/* ─── AI ASSISTANT ─── */
+.ai-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.ai-header-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 4px 16px var(--accent-glow); }
+.ai-header-name { font-size: 15px; font-weight: 700; }
+.ai-header-status { font-size: 11px; color: var(--green); display: flex; align-items: center; gap: 4px; }
+.ai-status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.ai-messages { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+.ai-messages::-webkit-scrollbar { display: none; }
+.ai-msg-user { align-self: flex-end; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; border-radius: 18px 18px 4px 18px; padding: 10px 14px; max-width: 80%; font-size: 13px; line-height: 1.4; }
+.ai-msg-bot { align-self: flex-start; background: var(--surface2); border: 1px solid var(--border); border-radius: 18px 18px 18px 4px; padding: 12px 14px; max-width: 88%; font-size: 13px; line-height: 1.5; color: var(--text); }
+.ai-msg-bot-header { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.ai-msg-bot-label { font-size: 11px; font-weight: 700; color: var(--accent2); font-family: var(--mono); }
+.gen-post-card { background: var(--surface3); border: 1px solid rgba(99,102,241,0.2); border-radius: 12px; padding: 10px; margin-top: 8px; font-size: 12px; color: var(--text2); line-height: 1.5; }
+.gen-post-actions { display: flex; gap: 6px; margin-top: 8px; }
+.gpbtn { padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer; border: none; font-family: var(--font); transition: transform 0.15s; }
+.gpbtn:active { transform: scale(0.95); }
+.gpbtn-post { background: var(--accent); color: white; }
+.gpbtn-copy { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
+.ai-quick-actions { padding: 10px 16px; border-top: 1px solid var(--border); flex-shrink: 0; }
+.ai-qa-label { font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; font-family: var(--mono); }
+.ai-qa-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.ai-qa-chip { background: var(--surface2); border: 1px solid rgba(99,102,241,0.2); border-radius: 20px; padding: 6px 12px; font-size: 11px; color: var(--accent2); cursor: pointer; transition: all 0.15s; }
+.ai-qa-chip:hover { background: rgba(99,102,241,0.1); border-color: var(--accent); }
+.ai-input-row { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.ai-input {
+  flex: 1; background: var(--surface2); border: 1.5px solid rgba(99,102,241,0.3);
+  border-radius: 20px; padding: 10px 16px; font-size: 13px; color: var(--text);
+  outline: none; font-family: var(--font); transition: border-color 0.2s;
+}
+.ai-input:focus { border-color: var(--accent); }
+.ai-send {
+  width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 16px; cursor: pointer; flex-shrink: 0; border: none; color: white;
+  box-shadow: 0 4px 12px var(--accent-glow); transition: transform 0.15s;
+}
+.ai-send:active { transform: scale(0.9); }
+.ai-typing { display: flex; align-items: center; gap: 4px; padding: 4px 0; }
+.ai-typing span { width: 6px; height: 6px; background: var(--accent2); border-radius: 50%; animation: typing 1.2s infinite; }
+.ai-typing span:nth-child(2) { animation-delay: 0.2s; }
+.ai-typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typing { 0%,60%,100%{transform:translateY(0);opacity:0.4} 30%{transform:translateY(-4px);opacity:1} }
+
+/* ─── MESSAGES LIST ─── */
+.msg-list-header { padding: 16px 20px; font-size: 18px; font-weight: 700; border-bottom: 1px solid var(--border); flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; }
+.msg-list-item { padding: 14px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.15s; }
+.msg-list-item:hover { background: var(--surface2); }
+.msg-list-item:active { background: var(--surface3); }
+.msg-list-info { flex: 1; min-width: 0; }
+.msg-list-name { font-size: 14px; font-weight: 600; }
+.msg-list-preview { font-size: 12px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.msg-list-time { font-size: 11px; color: var(--text3); }
+.msg-list-badge { width: 18px; height: 18px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: white; }
+
+/* ─── TOAST ─── */
+.toast {
+  position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 12px;
+  padding: 10px 20px; font-size: 13px; font-weight: 500; color: var(--text);
+  opacity: 0; transition: all 0.3s; z-index: 200; white-space: nowrap; pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ─── THEME TOGGLE BUTTON ─── */
+.theme-toggle-outer {
+  position: fixed; top: 20px; right: 20px; z-index: 100;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 50px; padding: 8px 16px; cursor: pointer;
+  font-size: 13px; color: var(--text2); font-family: var(--font);
+  transition: all 0.2s; display: flex; align-items: center; gap: 6px;
+}
+.theme-toggle-outer:hover { border-color: var(--accent); color: var(--text); }
+
+/* ─── LIGHT THEME ─── */
+body.light {
+  --bg: #f0f0f5;
+  --surface: #ffffff;
+  --surface2: #f4f4f8;
+  --surface3: #eaeaef;
+  --border: rgba(0,0,0,0.08);
+  --text: #0d0d18;
+  --text2: #4a4a60;
+  --text3: #9898b0;
+  --accent-glow: rgba(99,102,241,0.2);
+}
+body.light .phone { border-color: rgba(0,0,0,0.1); box-shadow: 0 40px 80px rgba(0,0,0,0.15), 0 0 60px var(--accent-glow); }
+body.light .phone::before { background: #e0e0e8; }
+body.light .auth-bg { background: linear-gradient(160deg, #f0f0f8 0%, #f8f8ff 100%); }
+
+/* ─── COMMENT SCREEN ─── */
+.comment-card { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; gap: 10px; }
+.comment-body { flex: 1; }
+.comment-name { font-size: 13px; font-weight: 600; }
+.comment-text { font-size: 12px; color: var(--text2); line-height: 1.4; margin: 4px 0; }
+.comment-actions { display: flex; gap: 14px; margin-top: 6px; }
+.comment-action { font-size: 11px; color: var(--text3); cursor: pointer; transition: color 0.15s; }
+.comment-input-bar { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.comment-input {
+  flex: 1; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 20px; padding: 10px 16px; font-size: 13px; color: var(--text);
+  outline: none; font-family: var(--font); transition: border-color 0.2s;
+}
+.comment-input:focus { border-color: var(--accent); }
+.comment-send {
+  width: 36px; height: 36px; background: var(--accent); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 16px;
+  cursor: pointer; flex-shrink: 0; border: none; color: white; transition: transform 0.15s;
+}
+.comment-send:active { transform: scale(0.9); }
+
+/* BACK BTN */
+.back-btn { font-size: 18px; color: var(--text2); cursor: pointer; padding: 4px 8px; margin-right: 4px; transition: color 0.15s; }
+.back-btn:hover { color: var(--text); }
+</style>
+</head>
+<body>
+
+<button class="theme-toggle-outer" id="themeToggle">☀️ Modo Claro</button>
+
+<div class="phone">
+  <div class="status-bar">
+    <span id="clock">9:41</span>
+    <div class="status-right"><span>●●●</span><span>▲</span><span id="battery">⬛</span></div>
+  </div>
+
+  <!-- ══ SCREEN: LOGIN ══ -->
+  <div class="screen active" id="screen-login">
+    <div class="auth-bg">
+      <div class="auth-logo"><div class="auth-logo-icon">✦</div><div class="auth-logo-name">NEXUS</div></div>
+      <div class="auth-headline">Bem-vindo<br>de volta ✦</div>
+      <div class="auth-sub">Entre na conversa. A IA está pronta para amplificar sua voz.</div>
+      <div class="field-group">
+        <div class="field-label">E-mail</div>
+        <div class="field"><span class="field-icon">✉</span><input type="email" id="loginEmail" placeholder="seu@email.com" value="alex@nexus.app"></div>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Senha</div>
+        <div class="field"><span class="field-icon">🔒</span><input type="password" id="loginPass" placeholder="Sua senha" value="12345678"></div>
+        <div class="error-msg" id="loginError">E-mail ou senha incorretos.</div>
+      </div>
+      <div class="forgot-link">Esqueceu a senha?</div>
+      <button class="btn-primary" onclick="doLogin()">Entrar</button>
+      <div class="divider"><div class="divider-line"></div><div class="divider-text">ou continue com</div><div class="divider-line"></div></div>
+      <div class="social-btn" onclick="doLogin()"><span>🔵</span><span>Continuar com Google</span></div>
+      <div class="social-btn" onclick="doLogin()"><span>🍎</span><span>Continuar com Apple</span></div>
+      <div class="auth-footer">Não tem conta? <span class="auth-link" onclick="goTo('screen-register')">Cadastre-se</span></div>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN: REGISTER ══ -->
+  <div class="screen" id="screen-register">
+    <div class="auth-bg">
+      <div class="auth-logo"><div class="auth-logo-icon">✦</div><div class="auth-logo-name">NEXUS</div></div>
+      <div class="progress-bar"><div class="progress-step done"></div><div class="progress-step active"></div><div class="progress-step"></div></div>
+      <div class="auth-headline">Crie sua<br>conta ✦</div>
+      <div class="auth-sub">Junte-se a milhões usando IA para ampliar sua presença digital.</div>
+      <div class="field-group">
+        <div class="field-label">Nome Completo</div>
+        <div class="field"><span class="field-icon">👤</span><input type="text" id="regName" placeholder="Seu nome completo"></div>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Username</div>
+        <div class="field"><span class="field-icon">@</span><input type="text" id="regUser" placeholder="seunome"></div>
+      </div>
+      <div class="field-group">
+        <div class="field-label">E-mail</div>
+        <div class="field"><span class="field-icon">✉</span><input type="email" id="regEmail" placeholder="seu@email.com"></div>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Senha</div>
+        <div class="field"><span class="field-icon">🔒</span><input type="password" id="regPass" placeholder="Mínimo 8 caracteres"></div>
+      </div>
+
+      <!-- ══ ESPECIALIZAÇÃO EM SEGURANÇA DO TRABALHO ══ -->
+      <div class="section-divider">
+        <div class="section-divider-line"></div>
+        <div class="section-divider-label">🦺 Perfil Profissional</div>
+        <div class="section-divider-line"></div>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label">Área de Atuação</div>
+        <div class="field"><span class="field-icon">🏗️</span>
+          <select id="regArea">
+            <option value="">Selecione sua área...</option>
+            <option value="construcao">Construção Civil</option>
+            <option value="industria">Indústria / Manufatura</option>
+            <option value="mineracao">Mineração</option>
+            <option value="saude">Saúde / Hospitalar</option>
+            <option value="logistica">Logística / Transportes</option>
+            <option value="energia">Energia Elétrica</option>
+            <option value="quimica">Química / Petroquímica</option>
+            <option value="agronegocio">Agronegócio</option>
+            <option value="outro">Outro</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label">Normas Regulamentadoras — Principais Especialidades</div>
+      </div>
+      <div class="nr-grid" id="nrGrid">
+        <div class="nr-card" onclick="toggleNR(this,'NR-3')">
+          <div class="nr-badge">NR-3</div>
+          <div class="nr-title">Embargo e Interdição</div>
+          <div class="nr-desc">Fiscalização e paralisação de obras</div>
+        </div>
+        <div class="nr-card" onclick="toggleNR(this,'NR-5')">
+          <div class="nr-badge">NR-5</div>
+          <div class="nr-title">CIPA</div>
+          <div class="nr-desc">Comissão Interna de Prev. de Acidentes</div>
+        </div>
+        <div class="nr-card" onclick="toggleNR(this,'NR-6')">
+          <div class="nr-badge">NR-6</div>
+          <div class="nr-title">EPI</div>
+          <div class="nr-desc">Equipamentos de Proteção Individual</div>
+        </div>
+        <div class="nr-card" onclick="toggleNR(this,'NR-10')">
+          <div class="nr-badge">NR-10</div>
+          <div class="nr-title">Elétrica</div>
+          <div class="nr-desc">Segurança em instalações elétricas</div>
+        </div>
+        <div class="nr-card" onclick="toggleNR(this,'NR-12')">
+          <div class="nr-badge">NR-12</div>
+          <div class="nr-title">Máquinas e Equipamentos</div>
+          <div class="nr-desc">Segurança no uso de máquinas</div>
+        </div>
+        <div class="nr-card" onclick="toggleNR(this,'NR-18')">
+          <div class="nr-badge">NR-18</div>
+          <div class="nr-title">Construção Civil</div>
+          <div class="nr-desc">Cond. e meio amb. de trabalho</div>
+        </div>
+        <div class="nr-card" onclick="toggleNR(this,'NR-33')">
+          <div class="nr-badge">NR-33</div>
+          <div class="nr-title">Espaço Confinado</div>
+          <div class="nr-desc">Segurança em espaços confinados</div>
+        </div>
+        <div class="nr-card" onclick="toggleNR(this,'NR-35')">
+          <div class="nr-badge">NR-35</div>
+          <div class="nr-title">Trabalho em Altura</div>
+          <div class="nr-desc">Atividades acima de 2 metros</div>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label">Nível de Experiência</div>
+      </div>
+      <div class="exp-row">
+        <div class="exp-chip" onclick="selectExp(this,'Iniciante')">🌱<br>Iniciante</div>
+        <div class="exp-chip" onclick="selectExp(this,'Intermediário')">⚡<br>Intermediário</div>
+        <div class="exp-chip" onclick="selectExp(this,'Sênior')">🏆<br>Sênior</div>
+        <div class="exp-chip" onclick="selectExp(this,'Especialista')">🎯<br>Especialista</div>
+      </div>
+
+      <div class="error-msg" id="regError">Preencha todos os campos corretamente.</div>
+      <button class="btn-primary" onclick="doRegister()">Criar Conta →</button>
+      <div class="auth-footer" style="margin-top:12px">Já tem conta? <span class="auth-link" onclick="goTo('screen-login')">Entrar</span></div>
+      <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:10px;line-height:1.5">Ao criar conta você concorda com os <span style="color:var(--accent2)">Termos</span> e <span style="color:var(--accent2)">Privacidade</span></div>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN: FEED ══ -->
+  <div class="screen" id="screen-feed">
+    <div class="feed-header">
+      <div class="feed-logo">✦ nexus</div>
+      <div style="display:flex;gap:12px;align-items:center">
+        <span style="font-size:18px;cursor:pointer" onclick="navTo('screen-notifications')">🔔</span>
+        <div class="avatar av1" style="width:30px;height:30px;font-size:12px;cursor:pointer" onclick="navTo('screen-profile')">A</div>
+      </div>
+    </div>
+    <div class="feed-tabs">
+      <div class="feed-tab active" onclick="switchFeedTab(this,'feed-foryou')">Para Você</div>
+      <div class="feed-tab" onclick="switchFeedTab(this,'feed-following')">Seguindo</div>
+      <div class="feed-tab" onclick="switchFeedTab(this,'feed-ai')">✦ IA</div>
+    </div>
+    <div class="scrollable" id="feed-foryou">
+      <!-- posts injected by JS -->
+    </div>
+    <div class="scrollable" id="feed-following" style="display:none"></div>
+    <div class="scrollable" id="feed-ai" style="display:none"></div>
+    <div class="bottom-nav">
+      <div class="nav-item active" onclick="navTo('screen-feed')"><div class="nav-icon">🏠</div><div class="nav-dot"></div></div>
+      <div class="nav-item" onclick="navTo('screen-explore')"><div class="nav-icon">🔍</div></div>
+      <div class="nav-item nav-create" onclick="navTo('screen-create')"><div class="nav-icon" style="display:flex;align-items:center;justify-content:center">✦</div></div>
+      <div class="nav-item" onclick="navTo('screen-notifications')"><div class="nav-icon">🔔</div></div>
+      <div class="nav-item" onclick="navTo('screen-messages')"><div class="nav-icon">💬</div></div>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN: CREATE POST ══ -->
+  <div class="screen" id="screen-create">
+    <div class="modal-header">
+      <span class="modal-cancel" onclick="navTo('screen-feed')">Cancelar</span>
+      <span class="modal-title">Novo Post</span>
+      <button class="modal-btn" id="publishBtn" onclick="publishPost()">Publicar</button>
+    </div>
+    <div style="display:flex;padding:16px 20px 0;gap:12px;flex-shrink:0">
+      <div class="avatar av1" style="flex-shrink:0">A</div>
+      <div style="flex:1;padding-top:8px;font-size:14px;font-weight:600">Alexandra Costa</div>
+    </div>
+    <textarea class="create-textarea" id="createTextarea" placeholder="O que está acontecendo?" maxlength="280" oninput="updateCharCount()"></textarea>
+    <div class="create-char" id="charCount">0 / 280</div>
+    <div class="ai-generate-card" id="aiSuggestCard">
+      <div class="ai-gen-header">
+        <div class="ai-gen-icon">✦</div>
+        <div class="ai-gen-title">Sugestão de IA</div>
+        <div style="margin-left:auto;font-size:11px;color:var(--text3);font-family:var(--mono)">Score: <span id="viralScore" style="color:var(--green)">—</span></div>
+      </div>
+      <div class="ai-suggestion" id="aiSuggestionText">Digite algo para receber sugestões da IA...</div>
+      <div class="ai-actions">
+        <button class="ai-btn ai-btn-use" onclick="useAiSuggestion()">Usar sugestão</button>
+        <button class="ai-btn ai-btn-regen" onclick="regenAiSuggestion()">↻ Gerar novo</button>
+      </div>
+    </div>
+    <!-- Image preview area -->
+    <div id="imagePreviewArea" style="display:none;margin:0 20px 10px;position:relative;">
+      <img id="imagePreviewImg" src="" alt="preview" style="width:100%;max-height:180px;object-fit:cover;border-radius:14px;border:1.5px solid var(--border);">
+      <div onclick="removeImage()" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.7);border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;color:white;">✕</div>
+      <div id="safetyAnalysisBadge" style="display:none;position:absolute;bottom:8px;left:8px;background:rgba(244,63,94,0.9);border-radius:8px;padding:3px 8px;font-size:10px;font-weight:700;color:white;font-family:var(--mono);">🔍 Analisando riscos...</div>
+    </div>
+    <input type="file" id="imageFileInput" accept="image/*" style="display:none" onchange="handleImageUpload(event)">
+    <div style="flex:1"></div>
+    <div class="create-toolbar">
+      <span class="toolbar-icon" onclick="document.getElementById('imageFileInput').click()">🖼</span>
+      <span class="toolbar-icon">📊</span>
+      <span class="toolbar-icon">🎯</span>
+      <span style="margin-left:auto;font-size:13px;color:var(--text3)">Público</span>
+    </div>
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="navTo('screen-feed')"><div class="nav-icon">🏠</div></div>
+      <div class="nav-item" onclick="navTo('screen-explore')"><div class="nav-icon">🔍</div></div>
+      <div class="nav-item nav-create active" onclick="navTo('screen-create')"><div class="nav-icon" style="display:flex;align-items:center;justify-content:center">✦</div></div>
+      <div class="nav-item" onclick="navTo('screen-notifications')"><div class="nav-icon">🔔</div></div>
+      <div class="nav-item" onclick="navTo('screen-messages')"><div class="nav-icon">💬</div></div>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN: PROFILE ══ -->
+  <div class="screen" id="screen-profile">
+    <div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+      <div class="profile-cover"><div class="profile-cover-pattern"></div></div>
+      <div class="profile-header">
+        <div class="profile-avatar">A</div>
+        <div class="profile-edit-btn" onclick="navTo('screen-settings')">Editar perfil</div>
+        <div class="profile-name" id="profileName">Alexandra Costa</div>
+        <div class="profile-handle" id="profileHandle">@alexcosta · PRO ✦</div>
+        <div class="profile-bio">Criadora de conteúdo tech & IA 🚀 | Explorando o futuro digital | Curitiba, BR</div>
+        <div class="profile-stats">
+          <div class="stat-item"><span class="stat-num" id="statPosts">12</span> <span class="stat-label">posts</span></div>
+          <div class="stat-item"><span class="stat-num">4.2K</span> <span class="stat-label">seguidores</span></div>
+          <div class="stat-item"><span class="stat-num">318</span> <span class="stat-label">seguindo</span></div>
+        </div>
+      </div>
+      <div class="profile-tabs">
+        <div class="profile-tab active">Posts</div>
+        <div class="profile-tab">Respostas</div>
+        <div class="profile-tab">Mídia</div>
+        <div class="profile-tab">Curtidas</div>
+      </div>
+      <div class="scrollable" id="profilePostsContainer"></div>
+    </div>
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="navTo('screen-feed')"><div class="nav-icon">🏠</div></div>
+      <div class="nav-item" onclick="navTo('screen-explore')"><div class="nav-icon">🔍</div></div>
+      <div class="nav-item nav-create" onclick="navTo('screen-create')"><div class="nav-icon" style="display:flex;align-items:center;justify-content:center">✦</div></div>
+      <div class="nav-item" onclick="navTo('screen-notifications')"><div class="nav-icon">🔔</div></div>
+      <div class="nav-item active" onclick="navTo('screen-profile')"><div class="nav-icon" style="color:var(--accent)">👤</div><div class="nav-dot"></div></div>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN: EXPLORE ══ -->
+  <div class="screen" id="screen-explore">
+    <div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+      <div class="search-bar">
+        <span>🔍</span>
+        <input type="text" placeholder="Buscar pessoas, posts, tópicos..." oninput="handleSearch(this.value)">
+      </div>
+      <div class="explore-chips">
+        <div class="echip on" onclick="toggleChip(this)">Todos</div>
+        <div class="echip off" onclick="toggleChip(this)">Tech</div>
+        <div class="echip off" onclick="toggleChip(this)">IA</div>
+        <div class="echip off" onclick="toggleChip(this)">Design</div>
+        <div class="echip off" onclick="toggleChip(this)">Negócios</div>
+      </div>
+      <div class="scrollable">
+        <div class="ai-rec-card">
+          <div class="ai-rec-header">
+            <div style="width:24px;height:24px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px">✦</div>
+            <div style="font-size:12px;font-weight:700;color:var(--accent2)">Sugeridos pela IA</div>
+          </div>
+          <div class="ai-rec-list" id="aiRecList"></div>
+        </div>
+        <div class="trend-section-title">Em Alta Agora</div>
+        <div id="trendsList"></div>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="navTo('screen-feed')"><div class="nav-icon">🏠</div></div>
+      <div class="nav-item active" onclick="navTo('screen-explore')"><div class="nav-icon" style="color:var(--accent)">🔍</div><div class="nav-dot"></div></div>
+      <div class="nav-item nav-create" onclick="navTo('screen-create')"><div class="nav-icon" style="display:flex;align-items:center;justify-content:center">✦</div></div>
+      <div class="nav-item" onclick="navTo('screen-notifications')"><div class="nav-icon">🔔</div></div>
+      <div class="nav-item" onclick="navTo('screen-messages')"><div class="nav-icon">💬</div></div>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN: NOTIFICATIONS ══ -->
+  <div class="screen" id="screen-notifications">
+    <div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+      <div class="notif-header">
+        Notificações
+        <span style="font-size:13px;color:var(--accent2);font-weight:500;cursor:pointer" onclick="markAllRead()">Marcar todas lidas</span>
+      </div>
+      <div class="scrollable" id="notifList"></div>
+    </div>
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="navTo('screen-feed')"><div class="nav-icon">🏠</div></div>
+      <div class="nav-item" onclick="navTo('screen-explore')"><div class="nav-icon">🔍</div></div>
+      <div class="nav-item nav-create" onclick="navTo('screen-create')"><div class="nav-icon" style="display:flex;align-items:center;justify-content:center">✦</div></div>
+      <div class="nav-item active" onclick="navTo('screen-notifications')"><div class="nav-icon" style="color:var(--accent)">🔔</div><div class="nav-dot"></div></div>
+      <div class="nav-item" onclick="navTo('screen-messages')"><div class="nav-icon">💬</div></div>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN: MESSAGES LIST ══ -->
+  <div class="screen" id="screen-messages">
+    <div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+      <div class="msg-list-header">
+        Mensagens
+        <span style="font-size:22px;cursor:pointer;color:var(--accent2)">✏</span>
+      </div>
+      <div class="scrollable" id="msgListContainer"></div>
+    </div>
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="navTo('screen-feed')"><div class="nav-icon">🏠</div></div>
+      <div class="nav-item" onclick="navTo('screen-explore')"><div class="nav-icon">🔍</div></div>
+      <div class="nav-item nav-create" onclick="navTo('screen-create')"><div class="nav-icon" style="display:flex;align-items:center;justify-content:center">✦</div></div>
+      <div class="nav-item" onclick="navTo('screen-notifications')"><div class="nav-icon">🔔</div></div>
+      <div class="nav-item active" onclick="navTo('screen-messages')"><div class="nav-icon" style="color:var(--accent)">💬</div><div class="nav-dot"></div></div>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN: CHAT ══ -->
+  <div class="screen" id="screen-chat">
+    <div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+      <div class="chat-header">
+        <span class="back-btn" onclick="navTo('screen-messages')">←</span>
+        <div class="avatar av2" style="width:38px;height:38px;font-size:14px" id="chatAvatar">M</div>
+        <div class="chat-user-info">
+          <div class="chat-user-name" id="chatUserName">Mateus Dev</div>
+          <div class="chat-user-status">● Online agora</div>
+        </div>
+        <span style="font-size:18px;color:var(--text3)">⋯</span>
+      </div>
+      <div class="chat-messages" id="chatMessages"></div>
+      <div class="ai-reply-section">
+        <div class="ai-reply-label"><span>✦</span> Respostas IA</div>
+        <div class="ai-chips-row" id="aiChipsRow"></div>
+      </div>
+      <div class="chat-input-row">
+        <input class="chat-input" id="chatInput" placeholder="Mensagem..." onkeydown="if(event.key==='Enter')sendChat()">
+        <button class="chat-send" onclick="sendChat()">↑</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN: AI ASSISTANT ══ -->
+  <div class="screen" id="screen-ai">
+    <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;background:linear-gradient(180deg,#0d0d18 0%,var(--surface) 100%)">
+      <div class="ai-header">
+        <span class="back-btn" onclick="navTo('screen-feed')">←</span>
+        <div class="ai-header-icon">✦</div>
+        <div style="flex:1">
+          <div class="ai-header-name">Nexus AI</div>
+          <div class="ai-header-status"><div class="ai-status-dot"></div>Ativo e pronto</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:11px;font-weight:600;color:var(--text2);cursor:pointer" onclick="clearAiChat()">Nova</div>
+      </div>
+      <div class="ai-messages" id="aiChatMessages"></div>
+      <div class="ai-quick-actions">
+        <div class="ai-qa-label">Ações rápidas</div>
+        <div class="ai-qa-chips">
+          <div class="ai-qa-chip" onclick="aiQuickAction('Gere uma thread viral sobre tendências de IA em 2025')">✦ Gerar thread</div>
+          <div class="ai-qa-chip" onclick="aiQuickAction('Analise meu perfil e sugira melhorias para crescimento')">📊 Analisar perfil</div>
+          <div class="ai-qa-chip" onclick="aiQuickAction('Quais são as tendências mais virais do momento?')">🔥 Ver tendências</div>
+          <div class="ai-qa-chip" onclick="aiQuickAction('Dê uma ideia criativa de post para hoje')">💡 Ideia de post</div>
+        </div>
+      </div>
+      <div class="ai-input-row">
+        <span style="font-size:18px;color:var(--text3);cursor:pointer">+</span>
+        <input class="ai-input" id="aiChatInput" placeholder="Peça algo ao Nexus AI..." onkeydown="if(event.key==='Enter')sendAiMessage()">
+        <button class="ai-send" onclick="sendAiMessage()">↑</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN: SETTINGS ══ -->
+  <div class="screen" id="screen-settings">
+    <div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+      <div class="settings-header">
+        <span class="back-btn" onclick="navTo('screen-profile')">←</span>
+        <div class="settings-title">Configurações</div>
+      </div>
+      <div class="scrollable">
+        <div class="settings-profile-card">
+          <div class="settings-avatar">A</div>
+          <div><div class="settings-user-name" id="settingsName">Alexandra Costa</div><div class="settings-user-handle" id="settingsHandle">@alexcosta</div></div>
+          <div class="settings-plan">✦ PRO</div>
+        </div>
+        <div class="settings-section">
+          <div class="settings-section-title">CONTA</div>
+          <div class="settings-row"><div class="srow-icon si-p">👤</div><div class="srow-info"><div class="srow-label">Informações da conta</div><div class="srow-desc">Nome, email, username</div></div><span style="font-size:16px;color:var(--text3)">›</span></div>
+          <div class="settings-row"><div class="srow-icon si-b">🔒</div><div class="srow-info"><div class="srow-label">Segurança e senha</div><div class="srow-desc">Autenticação de dois fatores</div></div><span style="font-size:16px;color:var(--text3)">›</span></div>
+          <div class="settings-row" onclick="navTo('screen-ai')"><div class="srow-icon si-g">✦</div><div class="srow-info"><div class="srow-label">Preferências de IA</div><div class="srow-desc">Personalização e sugestões</div></div><div class="srow-badge">Novo</div><span style="font-size:16px;color:var(--text3)">›</span></div>
+        </div>
+        <div class="settings-section">
+          <div class="settings-section-title">PRIVACIDADE</div>
+          <div class="settings-row">
+            <div class="srow-icon si-a">🔐</div>
+            <div class="srow-info"><div class="srow-label">Conta privada</div><div class="srow-desc">Somente aprovados podem ver</div></div>
+            <div class="switch off" id="privateSwitch" onclick="toggleSwitch(this)"><div class="switch-thumb"></div></div>
+          </div>
+          <div class="settings-row"><div class="srow-icon si-r">🚫</div><div class="srow-info"><div class="srow-label">Usuários bloqueados</div><div class="srow-desc">Gerencie bloqueios</div></div><span style="font-size:16px;color:var(--text3)">›</span></div>
+        </div>
+        <div class="settings-section">
+          <div class="settings-section-title">APARÊNCIA</div>
+          <div style="padding:12px 16px;border-top:1px solid var(--border)">
+            <div style="font-size:13px;font-weight:500;margin-bottom:10px">Tema do app</div>
+            <div class="theme-options">
+              <div class="theme-option sel" id="themeDark" onclick="setTheme('dark')"><div class="tswatch" style="background:#0a0a0f;border:1px solid rgba(255,255,255,0.1)"></div>Escuro</div>
+              <div class="theme-option" id="themeLight" onclick="setTheme('light')"><div class="tswatch" style="background:#f4f4f8"></div>Claro</div>
+              <div class="theme-option" id="themeAuto" onclick="setTheme('auto')"><div class="tswatch" style="background:linear-gradient(135deg,#0a0a0f 50%,#f4f4f8 50%)"></div>Auto</div>
+            </div>
+          </div>
+        </div>
+        <div style="padding:20px;text-align:center">
+          <div style="font-size:12px;color:var(--red);font-weight:600;cursor:pointer" onclick="doLogout()">Sair da conta</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:8px;font-family:var(--mono)">NEXUS v3.1.0 · Build 2025.04</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN: COMMENTS ══ -->
+  <div class="screen" id="screen-comments">
+    <div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+      <div class="modal-header">
+        <span class="back-btn" onclick="navTo('screen-feed')">←</span>
+        <span class="modal-title">Comentários</span>
+        <span></span>
+      </div>
+      <div class="scrollable" id="commentsList"></div>
+      <div class="comment-input-bar">
+        <div class="avatar av1" style="width:32px;height:32px;font-size:12px;flex-shrink:0">A</div>
+        <input class="comment-input" id="commentInput" placeholder="Adicionar comentário..." onkeydown="if(event.key==='Enter')addComment()">
+        <button class="comment-send" onclick="addComment()">↑</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+// ─── APP STATE ───
+const state = {
+  user: { name: 'Alexandra Costa', handle: 'alexcosta', avatar: 'A' },
+  posts: [],
+  chatMessages: {},
+  aiMessages: [],
+  currentChatUser: null,
+  notifications: [],
+  postCount: 12,
+};
+
+const CONTACTS = [
+  { id:1, name:'Mateus Dev', handle:'mateusdev', avatar:'M', avClass:'av2', online:true, preview:'boa demais! Funcionou aqui' },
+  { id:2, name:'Carla UX', handle:'carlaux', avatar:'C', avClass:'av3', online:false, preview:'adorei o post sobre IA 🔥' },
+  { id:3, name:'Pedro Silva', handle:'pedrosilva', avatar:'P', avClass:'av4', online:true, preview:'Quando vc publica o próximo?' },
+  { id:4, name:'Nina Torres', handle:'ninatorres', avatar:'N', avClass:'av1', online:false, preview:'Viu as novidades da OpenAI?' },
+];
+
+const INITIAL_POSTS = [
+  { id:1, name:'Alexandra Costa', handle:'alexcosta', avClass:'av1', avatar:'A', time:'2m', text:'A IA não vai substituir você — vai substituir quem não usa IA. Em 2025, a pergunta não é mais "devo aprender?" mas "por onde começar?" 🤖✨ <span class="ht">#TechHumano #IA2025</span>', likes:342, comments:28, reposts:87, liked:false, reposted:false, aiGenerated:false },
+  { id:2, name:'Mateus Dev', handle:'mateusdev', avClass:'av2', avatar:'M', time:'15m', text:'Thread 🧵: 5 ferramentas de IA que mudaram meu workflow como dev em 2025. Spoiler: nenhuma delas é o que você está pensando... <span class="ht">#Dev #ProductividadeIA</span>', likes:891, comments:64, reposts:203, liked:false, reposted:false, aiGenerated:true },
+  { id:3, name:'Carla UX', handle:'carlaux', avClass:'av3', avatar:'C', time:'1h', text:'Design + IA = futuro ou ameaça? Passei 30 dias usando apenas ferramentas de IA para criar. Resultado surpreendente. Acompanhem a thread 👇 <span class="ht">#UXDesign #DesignIA</span>', likes:1247, comments:156, reposts:342, liked:true, reposted:false, aiGenerated:false },
+  { id:4, name:'Pedro Silva', handle:'pedrosilva', avClass:'av4', avatar:'P', time:'3h', text:'Unpopular opinion: a maioria das "startups de IA" de 2024 vai desaparecer até o fim de 2025. O que vai sobrar? Produto real, problema real. <span class="ht">#Startups #TechOpinion</span>', likes:2103, comments:289, reposts:521, liked:false, reposted:false, aiGenerated:false },
+];
+
+const TRENDS = [
+  { rank:1, cat:'Tecnologia', name:'#IA2025', posts:'124.8K', color:'var(--accent)' },
+  { rank:2, cat:'Inovação', name:'#FuturoDoTrabalho', posts:'98.3K', color:'var(--accent2)' },
+  { rank:3, cat:'Criatividade', name:'#TechHumano', posts:'67.1K', color:'var(--green)' },
+  { rank:4, cat:'Negócios', name:'#StartupBR', posts:'45.2K', color:'var(--amber)' },
+  { rank:5, cat:'Cultura', name:'#DesignIA', posts:'38.9K', color:'var(--red)' },
+];
+
+const SUGGESTED_USERS = [
+  { name:'Nina Torres', handle:'ninatorres', avClass:'av1', avatar:'N', reason:'Perfis similares seguem' },
+  { name:'Lucas IA', handle:'lucasia', avClass:'av2', avatar:'L', reason:'Tendência em Tech' },
+  { name:'Sofia Web3', handle:'sofiaweb3', avClass:'av4', avatar:'S', reason:'Ativo em #IA2025' },
+];
+
+const NOTIFS = [
+  { type:'like', icon:'❤️', iconClass:'ni-like', text:'<b>Mateus Dev</b> curtiu seu post sobre IA', time:'2m', unread:true },
+  { type:'follow', icon:'👤', iconClass:'ni-follow', text:'<b>Nina Torres</b> começou a seguir você', time:'5m', unread:true },
+  { type:'comment', icon:'💬', iconClass:'ni-comment', text:'<b>Carla UX</b> comentou: "Concordo 100%! A IA é uma parceria"', time:'18m', unread:true },
+  { type:'repost', icon:'🔁', iconClass:'ni-repost', text:'<b>Pedro Silva</b> repostou seu conteúdo', time:'1h', unread:false },
+  { type:'ai', icon:'✦', iconClass:'ni-ai', text:'<b>Nexus AI:</b> Seu post teve 3x mais alcance hoje!', time:'2h', unread:false },
+  { type:'like', icon:'❤️', iconClass:'ni-like', text:'<b>Lucas IA</b> e <b>+47 pessoas</b> curtiram seu post', time:'3h', unread:false },
+];
+
+const CHAT_DATA = {
+  1: [
+    { out:false, text:'Oi Alex! Vi sua thread sobre IA, incrível demais 🔥', time:'10:20' },
+    { out:true, text:'Oi Mateus! Obrigada! Demorei bastante pra escrever rsrs', time:'10:21' },
+    { out:false, text:'Muito bem escrita. Você usa o Claude pra gerar os textos?', time:'10:22' },
+    { out:true, text:'Uso sim! O assistente do Nexus integrado com IA é demais', time:'10:23' },
+    { out:false, text:'boa demais! Funcionou aqui', time:'10:24' },
+  ],
+  2: [
+    { out:false, text:'adorei o post sobre IA 🔥', time:'09:15' },
+    { out:true, text:'Valeu Carla! Inspirada nos seus designs tbm', time:'09:17' },
+  ],
+  3: [
+    { out:false, text:'Quando vc publica o próximo?', time:'Ontem' },
+    { out:true, text:'Em breve! Trabalhando nisso agora', time:'Ontem' },
+  ],
+  4: [
+    { out:false, text:'Viu as novidades da OpenAI?', time:'Seg' },
+    { out:true, text:'Sim! Absurdo as novidades que saíram', time:'Seg' },
+  ],
+};
+
+const AI_CHIPS_DATA = [
+  'Que legal! Conta mais 😄',
+  'Concordo totalmente!',
+  'Tem algum link sobre isso?',
+  'Vou dar uma olhada!',
+  'Muito obrigada 🙏',
+];
+
+// ─── NAVIGATION ───
+function goTo(screenId) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
+}
+
+function navTo(screenId) {
+  goTo(screenId);
+  if (screenId === 'screen-feed') renderFeed();
+  if (screenId === 'screen-explore') renderExplore();
+  if (screenId === 'screen-notifications') renderNotifications();
+  if (screenId === 'screen-messages') renderMessages();
+  if (screenId === 'screen-profile') renderProfile();
+  if (screenId === 'screen-ai') initAiChat();
+}
+
+// ─── AUTH ───
+function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  const err = document.getElementById('loginError');
+  if (!email || !pass || pass.length < 4) {
+    err.classList.add('show');
+    return;
+  }
+  err.classList.remove('show');
+  navTo('screen-feed');
+}
+
+function doRegister() {
+  const name = document.getElementById('regName').value.trim();
+  const user = document.getElementById('regUser').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const pass = document.getElementById('regPass').value;
+  const err = document.getElementById('regError');
+  if (!name || !user || !email || pass.length < 8) {
+    err.classList.add('show');
+    return;
+  }
+  err.classList.remove('show');
+  state.user.name = name;
+  state.user.handle = user;
+  state.user.avatar = name[0].toUpperCase();
+  // Save safety profile
+  const selectedNRs = [...document.querySelectorAll('.nr-card.selected')].map(c => c.getAttribute('data-nr'));
+  const selectedExp = document.querySelector('.exp-chip.selected');
+  state.user.area = document.getElementById('regArea').value;
+  state.user.nrs = selectedNRs;
+  state.user.exp = selectedExp ? selectedExp.getAttribute('data-exp') : '';
+  navTo('screen-feed');
+}
+
+// ─── SAFETY HELPERS ───
+const _selectedNRs = new Set();
+function toggleNR(el, nr) {
+  el.setAttribute('data-nr', nr);
+  el.classList.toggle('selected');
+}
+function selectExp(el, exp) {
+  document.querySelectorAll('.exp-chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  el.setAttribute('data-exp', exp);
+}
+
+function doLogout() {
+  showToast('Saindo da conta...');
+  setTimeout(() => goTo('screen-login'), 800);
+}
+
+// ─── FEED ───
+function renderFeed() {
+  const container = document.getElementById('feed-foryou');
+  const allPosts = [...state.posts, ...INITIAL_POSTS];
+  container.innerHTML = allPosts.map(p => postHTML(p)).join('');
+  // Following tab
+  document.getElementById('feed-following').innerHTML = allPosts.slice(0,2).map(p => postHTML(p)).join('');
+  // AI tab
+  const aiPosts = allPosts.filter(p => p.aiGenerated || p.id === 2);
+  document.getElementById('feed-ai').innerHTML = '<div style="padding:12px 16px;font-size:11px;color:var(--accent2);font-family:var(--mono);border-bottom:1px solid var(--border)">✦ Curado pela Nexus AI — baseado no seu perfil</div>' + aiPosts.map(p => postHTML(p)).join('');
+}
+
+function postHTML(p) {
+  const riskColor = {
+    'ALTO': 'var(--red)', 'MÉDIO': 'var(--amber)',
+    'BAIXO': 'var(--green)', 'SEM RISCO': 'var(--green)'
+  };
+  const safetyBlock = p.hasSafetyAnalysis && p.safetyLevel
+    ? `<div style="display:inline-flex;align-items:center;gap:4px;background:${p.safetyLevel === 'ALTO' ? 'rgba(244,63,94,0.12)' : p.safetyLevel === 'MÉDIO' ? 'rgba(245,158,11,0.12)' : 'rgba(34,211,165,0.12)'};border:1px solid ${riskColor[p.safetyLevel] || 'var(--border)'};border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700;color:${riskColor[p.safetyLevel] || 'var(--text3)'};font-family:var(--mono);margin-bottom:6px;">🦺 Risco ${p.safetyLevel}</div><br>`
+    : '';
+  return `<div class="post-card">
+    <div class="avatar ${p.avClass}">${p.avatar}</div>
+    <div class="post-body">
+      <div class="post-header">
+        <span class="post-name">${p.name}</span>
+        <span class="post-handle">@${p.handle}</span>
+        <span class="post-time">${p.time}</span>
+      </div>
+      ${p.aiGenerated ? '<div class="ai-badge">✦ IA</div>' : ''}
+      ${safetyBlock}
+      <div class="post-text">${p.text}</div>
+      ${p.imageSrc ? `<img class="post-image" src="${p.imageSrc}" alt="post image">` : ''}
+      <div class="post-actions">
+        <span class="post-action${p.liked?' liked':''}" onclick="toggleLike(${p.id},this)">❤ <span>${p.likes}</span></span>
+        <span class="post-action" onclick="openComments(${p.id})">💬 ${p.comments}</span>
+        <span class="post-action${p.reposted?' retweeted':''}" onclick="toggleRepost(${p.id},this)">🔁 <span>${p.reposts}</span></span>
+        <span class="post-action" onclick="sharePost()">↗ Compartilhar</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+function switchFeedTab(el, tabId) {
+  document.querySelectorAll('.feed-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  ['feed-foryou','feed-following','feed-ai'].forEach(id => {
+    document.getElementById(id).style.display = id === tabId ? 'block' : 'none';
+  });
+}
+
+function toggleLike(postId, el) {
+  const allPosts = [...state.posts, ...INITIAL_POSTS];
+  const post = allPosts.find(p => p.id === postId);
+  if (!post) return;
+  post.liked = !post.liked;
+  post.likes += post.liked ? 1 : -1;
+  el.classList.toggle('liked');
+  el.querySelector('span').textContent = post.likes;
+  if (post.liked) el.style.transform = 'scale(1.3)';
+  setTimeout(() => el.style.transform = '', 200);
+}
+
+function toggleRepost(postId, el) {
+  const allPosts = [...state.posts, ...INITIAL_POSTS];
+  const post = allPosts.find(p => p.id === postId);
+  if (!post) return;
+  post.reposted = !post.reposted;
+  post.reposts += post.reposted ? 1 : -1;
+  el.classList.toggle('retweeted');
+  el.querySelector('span').textContent = post.reposts;
+  showToast(post.reposted ? '🔁 Repostado!' : 'Repost removido');
+}
+
+function sharePost() { showToast('🔗 Link copiado!'); }
+
+// ─── CREATE POST ───
+let aiSuggestTimeout = null;
+let currentAiSuggestion = '';
+
+function updateCharCount() {
+  const ta = document.getElementById('createTextarea');
+  const count = ta.value.length;
+  const el = document.getElementById('charCount');
+  el.textContent = `${count} / 280`;
+  el.className = 'create-char' + (count > 260 ? ' over' : count > 220 ? ' warn' : '');
+  clearTimeout(aiSuggestTimeout);
+  if (ta.value.trim().length > 5) {
+    aiSuggestTimeout = setTimeout(() => fetchAiSuggestion(ta.value), 800);
+  }
+}
+
+async function fetchAiSuggestion(topic) {
+  const el = document.getElementById('aiSuggestionText');
+  const score = document.getElementById('viralScore');
+  el.textContent = '✦ Gerando sugestão...';
+  score.textContent = '...';
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: 'Você é um especialista em redes sociais. Gere um post otimizado para engajamento máximo baseado no rascunho do usuário. Responda APENAS com JSON: {"post": "texto do post com hashtags", "score": número de 1-100, "tone": "tom do post"}. Máximo 280 caracteres no post.',
+        messages: [{ role: 'user', content: `Rascunho: "${topic}"\n\nGere um post viral sobre esse tema.` }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content[0].text;
+    try {
+      const json = JSON.parse(text.replace(/```json|```/g,'').trim());
+      currentAiSuggestion = json.post;
+      el.textContent = json.post;
+      score.textContent = json.score || '—';
+      score.style.color = json.score > 80 ? 'var(--green)' : json.score > 60 ? 'var(--amber)' : 'var(--red)';
+    } catch {
+      currentAiSuggestion = text;
+      el.textContent = text;
+      score.textContent = '85';
+    }
+  } catch (e) {
+    currentAiSuggestion = `"${topic}" — transforme essa ideia em conteúdo viral com estratégia e autenticidade! 🚀 #Nexus #ConteúdoIA`;
+    el.textContent = currentAiSuggestion;
+    score.textContent = '72';
+  }
+}
+
+async function regenAiSuggestion() {
+  const ta = document.getElementById('createTextarea');
+  if (ta.value.trim().length > 2) await fetchAiSuggestion(ta.value + ' (variação diferente)');
+}
+
+function useAiSuggestion() {
+  if (currentAiSuggestion) {
+    document.getElementById('createTextarea').value = currentAiSuggestion;
+    updateCharCount();
+    showToast('✦ Sugestão aplicada!');
+  }
+}
+
+// ─── IMAGE UPLOAD ───
+let currentImageBase64 = null;
+let currentImageMime = 'image/jpeg';
+
+function handleImageUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  currentImageMime = file.type || 'image/jpeg';
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const dataUrl = e.target.result;
+    currentImageBase64 = dataUrl.split(',')[1];
+    document.getElementById('imagePreviewImg').src = dataUrl;
+    document.getElementById('imagePreviewArea').style.display = 'block';
+    document.getElementById('safetyAnalysisBadge').style.display = 'block';
+    document.getElementById('safetyAnalysisBadge').textContent = '🔍 Imagem anexada — análise ao publicar';
+  };
+  reader.readAsDataURL(file);
+  event.target.value = '';
+}
+
+function removeImage() {
+  currentImageBase64 = null;
+  document.getElementById('imagePreviewArea').style.display = 'none';
+  document.getElementById('imagePreviewImg').src = '';
+}
+
+function publishPost() {
+  const ta = document.getElementById('createTextarea');
+  const text = ta.value.trim();
+  if (!text && !currentImageBase64) return;
+  const postId = Date.now();
+  const imgSrc = currentImageBase64 ? document.getElementById('imagePreviewImg').src : null;
+  const newPost = {
+    id: postId, name: state.user.name, handle: state.user.handle,
+    avClass: 'av1', avatar: state.user.avatar, time: 'agora',
+    text: (text || '').replace(/#(\w+)/g, '<span class="ht">#$1</span>'),
+    imageSrc: imgSrc,
+    likes: 0, comments: 0, reposts: 0, liked: false, reposted: false, aiGenerated: false,
+    hasSafetyAnalysis: false
+  };
+  state.posts.unshift(newPost);
+  state.postCount++;
+  ta.value = '';
+  updateCharCount();
+  document.getElementById('aiSuggestionText').textContent = 'Digite algo para receber sugestões da IA...';
+  document.getElementById('viralScore').textContent = '—';
+  // If has image, trigger safety analysis
+  const imgB64 = currentImageBase64;
+  const imgMime = currentImageMime;
+  removeImage();
+  showToast('✅ Post publicado!');
+  navTo('screen-feed');
+  if (imgB64) {
+    // Show typing comment immediately
+    if (!commentData[postId]) commentData[postId] = [];
+    commentData[postId].unshift({
+      isSafety: true, typing: true,
+      name: 'Téc. Rafael Segurança', handle: 'tec_seguranca_nr',
+      time: 'agora'
+    });
+    // Analyze after brief delay so feed renders first
+    setTimeout(() => analyzeSafetyImage(postId, imgB64, imgMime), 800);
+  }
+}
+
+async function analyzeSafetyImage(postId, base64, mime) {
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: `Você é o Técnico de Segurança do Trabalho Rafael Silva, CREA-PR ativo, especialista em NRs brasileiras.
+Analise a imagem enviada identificando riscos de segurança do trabalho visíveis.
+Responda SOMENTE em JSON com este formato exato:
+{
+  "riscos_encontrados": true ou false,
+  "nivel_risco": "ALTO" ou "MÉDIO" ou "BAIXO" ou "SEM RISCO",
+  "nrs_aplicaveis": ["NR-6", "NR-35"],
+  "descricao_riscos": "Descrição objetiva dos riscos identificados na imagem",
+  "recomendacao": "Recomendação prática e direta do técnico para corrigir ou prevenir o risco",
+  "comentario_social": "Comentário em tom profissional mas acessível para rede social, máx 200 chars"
+}
+Se não houver ambiente de trabalho ou riscos visíveis, retorne riscos_encontrados: false.`,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: mime, data: base64 } },
+            { type: 'text', text: 'Analise esta imagem quanto a riscos de segurança do trabalho.' }
+          ]
+        }]
+      })
+    });
+    const data = await res.json();
+    const rawText = data.content[0].text;
+    let analysis;
+    try {
+      analysis = JSON.parse(rawText.replace(/```json|```/g, '').trim());
+    } catch {
+      analysis = {
+        riscos_encontrados: false, nivel_risco: 'SEM RISCO',
+        nrs_aplicaveis: [],
+        descricao_riscos: '',
+        recomendacao: '',
+        comentario_social: 'Imagem analisada. Nenhum risco de segurança identificado.'
+      };
+    }
+    // Remove typing placeholder
+    if (!commentData[postId]) commentData[postId] = [];
+    commentData[postId] = commentData[postId].filter(c => !c.typing);
+    // Build safety comment
+    const safetyComment = {
+      isSafety: true,
+      typing: false,
+      name: 'Téc. Rafael Segurança',
+      handle: 'tec_seguranca_nr',
+      time: 'agora',
+      analysis
+    };
+    commentData[postId].unshift(safetyComment);
+    // Update post comments count
+    const post = state.posts.find(p => p.id === postId);
+    if (post) {
+      post.comments++;
+      post.hasSafetyAnalysis = true;
+      post.safetyLevel = analysis.nivel_risco;
+    }
+    renderFeed();
+    showToast('🦺 Análise de segurança concluída!');
+  } catch(e) {
+    // Remove typing on error
+    if (commentData[postId]) {
+      commentData[postId] = commentData[postId].filter(c => !c.typing);
+    }
+  }
+}
+
+// ─── PROFILE ───
+function renderProfile() {
+  document.getElementById('profileName').textContent = state.user.name;
+  document.getElementById('profileHandle').textContent = `@${state.user.handle} · PRO ✦`;
+  document.getElementById('statPosts').textContent = state.postCount;
+  const container = document.getElementById('profilePostsContainer');
+  const myPosts = state.posts.length > 0 ? state.posts : [INITIAL_POSTS[0]];
+  container.innerHTML = myPosts.map(p => postHTML(p)).join('');
+}
+
+// ─── EXPLORE ───
+function renderExplore() {
+  const recList = document.getElementById('aiRecList');
+  recList.innerHTML = SUGGESTED_USERS.map(u => `
+    <div class="ai-rec-item">
+      <div class="avatar ${u.avClass}" style="width:32px;height:32px;font-size:13px">${u.avatar}</div>
+      <div style="flex:1"><div class="ai-rec-name">${u.name}</div><div class="ai-rec-reason">${u.reason}</div></div>
+      <button class="follow-btn" onclick="toggleFollow(this)">Seguir</button>
+    </div>
+  `).join('');
+  const trendsList = document.getElementById('trendsList');
+  trendsList.innerHTML = TRENDS.map(t => `
+    <div class="trend-item">
+      <div class="trend-rank">${t.rank}</div>
+      <div class="trend-info">
+        <div class="trend-category">${t.cat}</div>
+        <div class="trend-name">${t.name}</div>
+        <div class="trend-posts">${t.posts} posts</div>
+      </div>
+      <div class="trend-chart">
+        <div class="trend-bar" style="height:40%;background:${t.color};opacity:0.5"></div>
+        <div class="trend-bar" style="height:65%;background:${t.color};opacity:0.7"></div>
+        <div class="trend-bar" style="height:80%;background:${t.color}"></div>
+        <div class="trend-bar" style="height:95%;background:${t.color}"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleFollow(btn) {
+  const isFollowing = btn.classList.contains('following');
+  btn.classList.toggle('following');
+  btn.textContent = isFollowing ? 'Seguir' : 'Seguindo';
+  showToast(isFollowing ? 'Deixou de seguir' : '✓ Seguindo agora!');
+}
+
+function toggleChip(el) {
+  document.querySelectorAll('.echip').forEach(c => { c.className = 'echip off'; });
+  el.className = 'echip on';
+}
+
+function handleSearch(v) {
+  if (v.length > 2) showToast(`Buscando "${v}"...`);
+}
+
+// ─── NOTIFICATIONS ───
+function renderNotifications() {
+  const list = document.getElementById('notifList');
+  let html = '<div class="notif-section-label">RECENTES</div>';
+  NOTIFS.forEach((n, i) => {
+    const dot = n.unread ? '<div class="unread-dot"></div>' : '';
+    html += `<div class="notif-item${n.unread ? ' unread' : ''}" onclick="readNotif(${i},this)">
+      <div class="notif-icon-wrap ${n.iconClass}">${n.icon}</div>
+      <div class="notif-body"><div class="notif-text">${n.text}</div><div class="notif-meta">${n.time}</div></div>
+      ${dot}
+    </div>`;
+    if (i === 2) html += '<div class="notif-section-label">ANTERIORES</div>';
+  });
+  list.innerHTML = html;
+}
+
+function readNotif(i, el) {
+  NOTIFS[i].unread = false;
+  el.classList.remove('unread');
+  const dot = el.querySelector('.unread-dot');
+  if (dot) dot.remove();
+}
+
+function markAllRead() {
+  NOTIFS.forEach(n => n.unread = false);
+  renderNotifications();
+  showToast('✓ Todas marcadas como lidas');
+}
+
+// ─── MESSAGES ───
+function renderMessages() {
+  const container = document.getElementById('msgListContainer');
+  container.innerHTML = CONTACTS.map(c => `
+    <div class="msg-list-item" onclick="openChat(${c.id})">
+      <div class="avatar ${c.avClass}" style="width:46px;height:46px;font-size:18px">${c.avatar}</div>
+      <div class="msg-list-info">
+        <div class="msg-list-name">${c.name}</div>
+        <div class="msg-list-preview">${c.preview}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+        <div class="msg-list-time">${c.online ? '<span style="color:var(--green)">●</span>' : '14:32'}</div>
+        ${c.id < 3 ? '<div class="msg-list-badge">1</div>' : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function openChat(contactId) {
+  const contact = CONTACTS.find(c => c.id === contactId);
+  state.currentChatUser = contactId;
+  document.getElementById('chatUserName').textContent = contact.name;
+  document.getElementById('chatAvatar').textContent = contact.avatar;
+  document.getElementById('chatAvatar').className = `avatar ${contact.avClass}`;
+  document.getElementById('chatAvatar').style = 'width:38px;height:38px;font-size:14px';
+  renderChat(contactId);
+  renderAiChips();
+  goTo('screen-chat');
+}
+
+function renderChat(id) {
+  const messages = CHAT_DATA[id] || [];
+  const container = document.getElementById('chatMessages');
+  container.innerHTML = messages.map(m => `
+    <div>
+      <div class="msg-bubble ${m.out ? 'msg-out' : 'msg-in'}">${m.text}</div>
+      <div class="msg-time${m.out ? ' msg-time-r' : ''}">${m.time}</div>
+    </div>
+  `).join('');
+  container.scrollTop = container.scrollHeight;
+}
+
+function renderAiChips() {
+  const row = document.getElementById('aiChipsRow');
+  row.innerHTML = AI_CHIPS_DATA.map(chip =>
+    `<div class="ai-chip" onclick="useChatChip('${chip}')">${chip}</div>`
+  ).join('');
+}
+
+function useChatChip(text) {
+  document.getElementById('chatInput').value = text;
+  sendChat();
+}
+
+function sendChat() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  const id = state.currentChatUser;
+  if (!CHAT_DATA[id]) CHAT_DATA[id] = [];
+  const now = new Date();
+  const time = `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+  CHAT_DATA[id].push({ out:true, text, time });
+  input.value = '';
+  renderChat(id);
+  // auto-reply after delay
+  setTimeout(() => {
+    const replies = ['😄', 'Que legal!', 'Entendi!', 'Com certeza!', 'Vou ver isso', '👍'];
+    CHAT_DATA[id].push({ out:false, text: replies[Math.floor(Math.random()*replies.length)], time });
+    renderChat(id);
+  }, 1500);
+}
+
+// ─── COMMENTS ───
+const commentData = {
+  1: [
+    { name:'Mateus Dev', handle:'mateusdev', avClass:'av2', avatar:'M', text:'Concordo 100%! A IA é uma parceria, não uma ameaça 🤝', time:'1m', likes:24 },
+    { name:'Carla UX', handle:'carlaux', avClass:'av3', avatar:'C', text:'Exatamente! Quem não se adaptar vai ficar pra trás', time:'3m', likes:18 },
+    { name:'Pedro Silva', handle:'pedrosilva', avClass:'av4', avatar:'P', text:'Bem dito! Já migrei todo meu workflow pra IA + humano', time:'8m', likes:9 },
+  ]
+};
+
+function openComments(postId) {
+  state.currentPostId = postId;
+  renderComments(postId);
+  goTo('screen-comments');
+}
+
+function renderComments(postId) {
+  const list = document.getElementById('commentsList');
+  const comments = commentData[postId] || [];
+  list.innerHTML = comments.map(c => {
+    if (c.isSafety) {
+      if (c.typing) {
+        return `<div class="comment-card">
+          <div class="safety-avatar">🦺</div>
+          <div class="comment-body">
+            <span class="comment-name">Téc. Rafael Segurança</span>
+            <span style="font-size:11px;color:var(--text3)"> @tec_seguranca_nr</span>
+            <div class="safety-comment" style="margin-top:6px;">
+              <div class="safety-comment-header">
+                <span style="font-size:11px;color:var(--text3)">Analisando imagem...</span>
+              </div>
+              <div class="safety-typing"><span></span><span></span><span></span></div>
+            </div>
+          </div>
+        </div>`;
+      }
+      const a = c.analysis;
+      const nrTags = (a.nrs_aplicaveis || []).map(nr =>
+        `<span class="safety-nr-tag">${nr}</span>`).join('');
+      const levelClass = a.nivel_risco === 'ALTO' ? 'risk-high'
+        : a.nivel_risco === 'MÉDIO' ? 'risk-medium' : 'risk-low';
+      const levelIcon = a.nivel_risco === 'ALTO' ? '🔴'
+        : a.nivel_risco === 'MÉDIO' ? '🟡' : '🟢';
+      return `<div class="comment-card">
+        <div class="safety-avatar">🦺</div>
+        <div class="comment-body" style="flex:1">
+          <span class="comment-name">Téc. Rafael Segurança</span>
+          <span style="font-size:11px;color:var(--text3)"> @tec_seguranca_nr · CREA-PR</span>
+          <div class="safety-comment">
+            <div class="safety-comment-header">
+              <span class="safety-name" style="font-size:11px">Análise de Segurança do Trabalho</span>
+              <span class="safety-badge-tag">🤖 IA + NR</span>
+            </div>
+            ${a.riscos_encontrados
+              ? `<div class="safety-risk-level ${levelClass}">${levelIcon} RISCO ${a.nivel_risco}</div>
+                 <div class="safety-text"><strong>⚠️ Riscos identificados:</strong> ${a.descricao_riscos}</div>
+                 <div class="safety-text" style="margin-top:6px"><strong>✅ Recomendação:</strong> ${a.recomendacao}</div>
+                 ${nrTags ? `<div class="safety-nr-tags">${nrTags}</div>` : ''}`
+              : `<div class="safety-risk-level risk-low">🟢 SEM RISCOS IDENTIFICADOS</div>
+                 <div class="safety-text">${a.comentario_social || 'Nenhum risco de segurança do trabalho identificado nesta imagem.'}</div>`
+            }
+          </div>
+          <div class="comment-actions" style="margin-top:8px">
+            <span class="comment-action" onclick="likeComment(this)">❤ 0</span>
+            <span class="comment-action">Responder</span>
+            <span class="comment-action">${c.time}</span>
+          </div>
+        </div>
+      </div>`;
+    }
+    return `<div class="comment-card">
+      <div class="avatar ${c.avClass}" style="width:36px;height:36px;font-size:14px">${c.avatar}</div>
+      <div class="comment-body">
+        <span class="comment-name">${c.name}</span> <span style="font-size:11px;color:var(--text3)">@${c.handle}</span>
+        <div class="comment-text">${c.text}</div>
+        <div class="comment-actions">
+          <span class="comment-action" onclick="likeComment(this)">❤ ${c.likes}</span>
+          <span class="comment-action">Responder</span>
+          <span class="comment-action">${c.time}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function likeComment(el) {
+  const current = parseInt(el.textContent.replace('❤ ',''));
+  el.textContent = `❤ ${current + 1}`;
+  el.style.color = 'var(--red)';
+}
+
+function addComment() {
+  const input = document.getElementById('commentInput');
+  const text = input.value.trim();
+  if (!text) return;
+  const postId = state.currentPostId || 1;
+  if (!commentData[postId]) commentData[postId] = [];
+  commentData[postId].unshift({ name: state.user.name, handle: state.user.handle, avClass:'av1', avatar:'A', text, time:'agora', likes: 0 });
+  input.value = '';
+  renderComments(postId);
+  // update comment count
+  const allPosts = [...state.posts, ...INITIAL_POSTS];
+  const post = allPosts.find(p => p.id === postId);
+  if (post) post.comments++;
+  showToast('💬 Comentário publicado!');
+}
+
+// ─── AI ASSISTANT ───
+function initAiChat() {
+  if (state.aiMessages.length === 0) {
+    state.aiMessages = [{
+      role: 'bot',
+      text: `Olá, ${state.user.name.split(' ')[0]}! 👋 Sou o Nexus AI, seu assistente de criação de conteúdo. Posso gerar posts virais, analisar tendências, sugerir hashtags, criar threads e muito mais. O que deseja criar hoje?`
+    }];
+    renderAiMessages();
+  }
+}
+
+function clearAiChat() {
+  state.aiMessages = [];
+  initAiChat();
+}
+
+function renderAiMessages() {
+  const container = document.getElementById('aiChatMessages');
+  container.innerHTML = state.aiMessages.map(m => {
+    if (m.role === 'user') {
+      return `<div class="ai-msg-user">${m.text}</div>`;
+    } else {
+      return `<div class="ai-msg-bot">
+        <div class="ai-msg-bot-header"><span>✦</span><div class="ai-msg-bot-label">NEXUS AI</div></div>
+        ${m.text}
+        ${m.postCard ? `<div class="gen-post-card">${m.postCard}</div>
+        <div class="gen-post-actions">
+          <button class="gpbtn gpbtn-post" onclick="useGeneratedPost('${m.postCard.replace(/'/g,"\\'")}')">Publicar agora</button>
+          <button class="gpbtn gpbtn-copy" onclick="copyText('${m.postCard.replace(/'/g,"\\'")}')">Copiar</button>
+          <button class="gpbtn gpbtn-copy" onclick="aiQuickAction('Gere uma variação diferente do post anterior')">↻</button>
+        </div>` : ''}
+      </div>`;
+    }
+  }).join('');
+  container.scrollTop = container.scrollHeight;
+}
+
+function aiQuickAction(prompt) {
+  document.getElementById('aiChatInput').value = prompt;
+  sendAiMessage();
+}
+
+async function sendAiMessage() {
+  const input = document.getElementById('aiChatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  state.aiMessages.push({ role: 'user', text });
+  // Add typing indicator
+  const typingId = 'typing-' + Date.now();
+  state.aiMessages.push({ role: 'bot', text: `<div class="ai-typing"><span></span><span></span><span></span></div>`, id: typingId });
+  renderAiMessages();
+  try {
+    const history = state.aiMessages
+      .filter(m => !m.id)
+      .slice(-10)
+      .map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.text }));
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: `Você é o Nexus AI, assistente de uma rede social. Ajude ${state.user.name} a criar conteúdo viral, analisar tendências e crescer nas redes. Seja direto, criativo e entusiasmado. Quando gerar posts, inclua hashtags. Responda em português brasileiro. Se o usuário pedir um post/texto para publicar, formate como: TEXTO: [o post aqui]`,
+        messages: history
+      })
+    });
+    const data = await res.json();
+    let reply = data.content[0].text;
+    // Remove typing indicator
+    state.aiMessages = state.aiMessages.filter(m => m.id !== typingId);
+    // Check if contains a post
+    let postCard = null;
+    const postMatch = reply.match(/TEXTO:\s*(.+?)(?:\n|$)/s);
+    if (postMatch) {
+      postCard = postMatch[1].trim();
+      reply = reply.replace(/TEXTO:\s*.+/s, '').trim();
+    }
+    state.aiMessages.push({ role: 'bot', text: reply, postCard });
+  } catch {
+    state.aiMessages = state.aiMessages.filter(m => m.id !== typingId);
+    state.aiMessages.push({ role: 'bot', text: 'Houve um erro de conexão. Tente novamente em instantes. 🔄' });
+  }
+  renderAiMessages();
+}
+
+function useGeneratedPost(text) {
+  navTo('screen-create');
+  setTimeout(() => {
+    document.getElementById('createTextarea').value = text;
+    updateCharCount();
+  }, 100);
+}
+
+function copyText(text) {
+  if (navigator.clipboard) navigator.clipboard.writeText(text);
+  showToast('📋 Copiado!');
+}
+
+// ─── SETTINGS ───
+function toggleSwitch(el) {
+  el.classList.toggle('off');
+  showToast(el.classList.contains('off') ? 'Conta pública' : 'Conta privada ativada');
+}
+
+function setTheme(t) {
+  document.querySelectorAll('.theme-option').forEach(o => o.classList.remove('sel'));
+  document.getElementById('theme' + t.charAt(0).toUpperCase() + t.slice(1)).classList.add('sel');
+  if (t === 'dark') { document.body.classList.remove('light'); }
+  else if (t === 'light') { document.body.classList.add('light'); }
+  else {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.body.classList.toggle('light', !prefersDark);
+  }
+  syncThemeToggleBtn();
+}
+
+function syncThemeToggleBtn() {
+  document.getElementById('themeToggle').textContent = document.body.classList.contains('light') ? '🌙 Modo Escuro' : '☀️ Modo Claro';
+}
+
+// ─── TOAST ───
+let toastTimeout;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ─── THEME TOGGLE ───
+document.getElementById('themeToggle').addEventListener('click', () => {
+  document.body.classList.toggle('light');
+  syncThemeToggleBtn();
+  const isDark = !document.body.classList.contains('light');
+  document.getElementById('themeDark').classList.toggle('sel', isDark);
+  document.getElementById('themeLight').classList.toggle('sel', !isDark);
+  document.getElementById('themeAuto').classList.remove('sel');
+});
+
+// ─── CLOCK ───
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent = `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+}
+updateClock();
+setInterval(updateClock, 10000);
+
+// ─── INIT ───
+renderFeed();
+</script>
+</body>
+</html>

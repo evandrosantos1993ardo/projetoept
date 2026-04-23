@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>EXTINTOR AAA + DRIVE</title>
+
+<style>
+body{margin:0;background:#0a0f14;font-family:Arial;overflow:hidden;color:white}
+canvas{display:block}
+
+#hud{
+position:absolute;top:0;width:100%;
+display:flex;justify-content:space-between;
+padding:10px;background:rgba(0,0,0,0.6)
+}
+
+#side{
+position:absolute;left:10px;top:80px;width:260px;
+background:rgba(0,0,0,0.6);
+padding:15px;border-radius:10px
+}
+
+#risk{
+position:absolute;right:20px;top:120px;
+width:50px;height:300px;background:#111;
+border-radius:10px;overflow:hidden
+}
+
+#riskBar{
+position:absolute;bottom:0;width:100%;
+background:linear-gradient(green,yellow,red);
+height:60%
+}
+
+#log{
+position:absolute;right:90px;top:120px;
+width:250px;height:300px;
+background:rgba(0,0,0,0.7);
+overflow:auto;padding:10px;
+border-radius:10px;font-size:12px
+}
+</style>
+</head>
+
+<body>
+
+<div id="hud">
+<div>⏱️ <span id="tempo">0</span></div>
+<div>⭐ <span id="pontos">0</span></div>
+<div>❤️ <span id="vidas">3</span></div>
+</div>
+
+<div id="side">
+<b>OBJETIVO</b><br>
+Apague o curto no fusível ativo.
+<br><br>
+<b>CONTROLES</b><br>
+Mouse = mirar<br>
+Clique = usar extintor
+</div>
+
+<div id="risk"><div id="riskBar"></div></div>
+<div id="log"></div>
+
+<canvas id="c"></canvas>
+
+<script>
+// 🔗 SUA API DO GOOGLE
+const API_URL = "https://script.google.com/macros/s/AKfycbwDS7vXoNk_ocOQBWHWlHqlmM9nM7WnIPAhyQQWKOI3bmOEgUCnw2U-V72YK0Qu_0OsJg/exec";
+
+// ✅ CORS CORRIGIDO: usa GET com query string + no-cors
+function salvarNoDrive(evento, painel) {
+  const params = new URLSearchParams({
+    tempo: state.tempo,
+    evento: evento,
+    painel: painel
+  });
+
+  fetch(API_URL + "?" + params.toString(), {
+    method: "GET",
+    mode: "no-cors"
+  }).catch(err => console.error("ERRO:", err));
+}
+
+// CANVAS
+const c=document.getElementById('c');
+const ctx=c.getContext('2d');
+c.width=innerWidth; c.height=innerHeight;
+
+let mouse={x:200,y:200};
+c.addEventListener('mousemove',e=>{mouse.x=e.clientX;mouse.y=e.clientY});
+
+let state={tempo:0,pontos:0,vidas:3};
+setInterval(()=>{state.tempo++;tempo.innerText=state.tempo},1000);
+
+let fuseIndex=0;
+let fusePos=[];
+let sparks=[],smoke=[],spray=[];
+let fogoAtivo=false;
+
+let logs=[];
+
+function adicionarLog(msg){
+  let cor="white";
+  if(msg.includes("⚠️")) cor="orange";
+  if(msg.includes("✔️")) cor="lightgreen";
+
+  logs.unshift(`<span style="color:${cor}">${msg}</span>`);
+  if(logs.length>20) logs.pop();
+
+  document.getElementById('log').innerHTML = logs.join('<br>');
+}
+
+// 🔥 NOVO EVENTO
+function novoFogo(){
+  fuseIndex = Math.floor(Math.random()*6);
+  fogoAtivo = true;
+
+  adicionarLog(`⚠️ Fusível F${fuseIndex+1} em risco!`);
+  salvarNoDrive("RISCO","F"+(fuseIndex+1));
+}
+
+// inicia
+setTimeout(novoFogo,1000);
+
+// DESENHO
+function drawPanel(){
+ ctx.fillStyle='#111827';
+ ctx.fillRect(300,80,c.width-600,c.height-160);
+
+ let spacing=(c.width-600)/7;
+ fusePos=[];
+
+ for(let i=0;i<6;i++){
+  let x=300+spacing*(i+1);
+  let y=c.height/2;
+  fusePos.push({x,y});
+
+  ctx.fillStyle='rgba(0,0,0,0.5)';
+  ctx.fillRect(x-25,y-55,50,110);
+
+  let g=ctx.createLinearGradient(x-20,y-50,x+20,y+50);
+  g.addColorStop(0,'#d1d5db');
+  g.addColorStop(1,'#1f2937');
+  ctx.fillStyle=g;
+  ctx.fillRect(x-20,y-50,40,100);
+
+  ctx.fillStyle='white';
+  ctx.font='12px Arial';
+  ctx.fillText('F'+(i+1),x-10,y-60);
+
+  if(i===fuseIndex && fogoAtivo){
+   ctx.strokeStyle='red';
+   ctx.lineWidth=3;
+   ctx.strokeRect(x-25,y-55,50,110);
+  }
+ }
+}
+
+function drawFault(){
+ if(!fogoAtivo) return;
+
+ let f=fusePos[fuseIndex];
+
+ for(let i=0;i<8;i++){
+  sparks.push({
+    x:f.x,y:f.y,
+    vx:(Math.random()-0.5)*10,
+    vy:(Math.random()-0.5)*10,
+    life:1
+  });
+ }
+
+ sparks=sparks.filter(s=>s.life>0);
+
+ sparks.forEach(s=>{
+  s.x+=s.vx;
+  s.y+=s.vy;
+  s.life-=0.03;
+
+  ctx.globalAlpha=s.life;
+  ctx.fillStyle='orange';
+  ctx.beginPath();
+  ctx.arc(s.x,s.y,3,0,Math.PI*2);
+  ctx.fill();
+  ctx.globalAlpha=1;
+ });
+}
+
+c.addEventListener('click',()=>{
+ if(!fogoAtivo) return;
+
+ let f=fusePos[fuseIndex];
+ let ang=Math.atan2(f.y-mouse.y,f.x-mouse.x);
+
+ for(let i=0;i<25;i++){
+  spray.push({
+    x:mouse.x,
+    y:mouse.y,
+    vx:Math.cos(ang)*(7+Math.random()*2),
+    vy:Math.sin(ang)*(7+Math.random()*2),
+    life:1
+  });
+ }
+
+ state.pontos+=10;
+ pontos.innerText=state.pontos;
+});
+
+function drawSpray(){
+ let f=fusePos[fuseIndex];
+
+ spray=spray.filter(p=>p.life>0);
+
+ spray.forEach(p=>{
+  p.x+=p.vx;
+  p.y+=p.vy;
+  p.life-=0.02;
+
+  let dx=p.x-f.x;
+  let dy=p.y-f.y;
+  let dist=Math.sqrt(dx*dx+dy*dy);
+
+  if(dist<40 && fogoAtivo){
+    fogoAtivo=false;
+    sparks=[];
+
+    let tempoAtual=state.tempo;
+
+    adicionarLog(`✔️ Painel F${fuseIndex+1} apagado aos ${tempoAtual}s`);
+    salvarNoDrive("APAGADO","F"+(fuseIndex+1));
+
+    setTimeout(novoFogo,1500);
+  }
+
+  ctx.fillStyle=`rgba(255,255,255,${p.life})`;
+  ctx.beginPath();
+  ctx.arc(p.x,p.y,5,0,Math.PI*2);
+  ctx.fill();
+ });
+}
+
+function drawExtintor(){
+ let f=fusePos[fuseIndex];
+
+ ctx.save();
+ ctx.translate(mouse.x,mouse.y);
+ ctx.rotate(Math.atan2(f.y-mouse.y,f.x-mouse.x));
+
+ ctx.fillStyle='red';
+ ctx.fillRect(-20,-40,40,80);
+
+ ctx.restore();
+}
+
+function loop(){
+ ctx.clearRect(0,0,c.width,c.height);
+ drawPanel();
+ drawFault();
+ drawSpray();
+ drawExtintor();
+ requestAnimationFrame(loop);
+}
+
+loop();
+</script>
+
+</body>
+</html>
